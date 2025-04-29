@@ -1,31 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="<%= isMobile ? 'desktop-forced' : '' %>">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %></title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=<%= isMobile ? '1024' : 'device-width' %>, initial-scale=1.0<%= isMobile ? ', maximum-scale=1.0, user-scalable=0' : '' %>">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <% if (isMobile) { %>
+    <link rel="stylesheet" href="/css/mobile.css">
+    <script src="/js/mobile-helper.js"></script>
+    <% } %>
+    <!-- Optional disable-devtool for production -->
+    <script disable-devtool-auto src="https://cdnjs.cloudflare.com/ajax/libs/disable-devtool/0.3.4/disable-devtool.min.js"></script>
 </head>
-<body>
-  <header>
-    <nav class="navbar">
-      <div class="logo">
-        <a href="/"><i class="fas fa-cricket-bat-ball"></i>CricLK.com</a>
-      </div>
-      <ul class="nav-links">
-        <li class="<%= page === 'home' ? 'active' : '' %>"><a href="/">Home</a></li>
-        <li class="<%= page === 'ipl20' ? 'active' : '' %>"><a href="/ipl20">IPL20</a></li>
-        <li class="<%= page === 'pslt20' ? 'active' : '' %>"><a href="/pslt20">PSLT20</a></li>
-        <li class="<%= page === 'live-cricket' ? 'active' : '' %>"><a href="/live-cricket">Live Cricket</a></li>
-        <li class="<%= page === 'all-channels' ? 'active' : '' %>"><a href="/all-channels">All Channels</a></li>
-      </ul>
-      <div class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </nav>
-  </header>
+<body class="<%= isMobile ? 'desktop-forced-body' : '' %>">
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="/"><i class="fas fa-tv"></i> CricketStream</a>
+            </div>
+            <ul class="nav-links">
+                <li class="<%= page === 'home' ? 'active' : '' %>"><a href="/">Home</a></li>
+                <li class="<%= page === 'ipl20' ? 'active' : '' %>"><a href="/ipl20">IPL20</a></li>
+                <li class="<%= page === 'pslt20' ? 'active' : '' %>"><a href="/pslt20">PSLT20</a></li>
+                <li class="<%= page === 'live-cricket' ? 'active' : '' %>"><a href="/live-cricket">Live Cricket</a></li>
+                <li class="<%= page === 'all-channels' ? 'active' : '' %>"><a href="/all-channels">All Channels</a></li>
+                <li class="<%= page === 'schedule' ? 'active' : '' %>"><a href="/schedule">Schedule</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
 
-  <main>
+    <main>
