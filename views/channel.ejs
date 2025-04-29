@@ -1,0 +1,50 @@
+<%- include('partials/header') %>
+
+<section class="streaming-container">
+  <h1><%= channel.name %> Live Stream</h1>
+  
+  <div class="player-container">
+    <div class="player-wrapper">
+      <!-- Using the secure proxy endpoint instead of direct iframe source -->
+      <iframe id="stream-player" 
+        src="/stream/<%= streamToken %>" 
+        width="100%" 
+        height="500px" 
+        marginheight="0" 
+        marginwidth="0" 
+        scrolling="no" 
+        frameborder="0" 
+        allowfullscreen 
+        allow="encrypted-media"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation">
+      </iframe>
+    </div>
+  </div>
+  
+  <div class="channel-info">
+    <h2>About <%= channel.name %></h2>
+    <% if (channelId === 'starSports') { %>
+      <p>Star Sports is the premier sports broadcaster in India, offering comprehensive coverage of cricket, including the Indian Premier League (IPL), international cricket matches, and other major sporting events.</p>
+    <% } else if (channelId === 'skySportsCricket') { %>
+      <p>Sky Sports Cricket is the UK's leading cricket broadcaster, providing in-depth coverage of international cricket, county cricket, and major cricket tournaments from around the world.</p>
+    <% } else if (channelId === 'willowCricket') { %>
+      <p>Willow Cricket is a specialized cricket channel offering exclusive coverage of major cricket tournaments, international matches, and cricket content for fans worldwide.</p>
+    <% } else if (channelId === 'ptvSports') { %>
+      <p>PTV Sports is Pakistan's premier sports channel offering comprehensive coverage of cricket tournaments, especially Pakistan Super League and international matches featuring Pakistan.</p>
+    <% } else if (channelId === 'geoSuper') { %>
+      <p>Geo Super is Pakistan's first sports channel providing exclusive coverage of cricket, including PSL and international cricket matches featuring Pakistan national team.</p>
+    <% } else if (channelId === 'tenSports') { %>
+      <p>Ten Sports is a popular sports channel in the subcontinent that broadcasts various cricket tournaments including Pakistan home series and other international cricket events.</p>
+    <% } %>
+    
+    <div class="back-link">
+      <% if (channelId === 'ptvSports' || channelId === 'geoSuper' || channelId === 'tenSports') { %>
+        <a href="/pslt20" class="btn"><i class="fas fa-arrow-left"></i> Back to Channel Selection</a>
+      <% } else { %>
+        <a href="/ipl20" class="btn"><i class="fas fa-arrow-left"></i> Back to Channel Selection</a>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

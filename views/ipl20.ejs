@@ -1,0 +1,916 @@
+<%- include('partials/header') %>
+
+<section class="streaming-container">
+  <h1>IPL 2025 Live Streaming</h1>
+  
+  <div class="channel-buttons">
+    <% Object.keys(channels).forEach(function(channelId) { %>
+      <button class="channel-btn <%= channelId === defaultChannel ? 'active' : '' %>" 
+              data-channel="<%= channelId %>" 
+              data-token="<%= channels[channelId].token %>">
+        <%= channels[channelId].name %>
+      </button>
+    <% }); %>
+  </div>
+
+  <div class="player-container">
+    <div class="player-wrapper">
+      <!-- Using secure stream endpoint instead of direct iframe source -->
+      <iframe id="stream-player" 
+        src="/stream/<%= channels[defaultChannel].token %>" 
+        width="100%" 
+        height="500px" 
+        marginheight="0" 
+        marginwidth="0" 
+        scrolling="no" 
+        frameborder="0" 
+        allowfullscreen 
+        allow="encrypted-media"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation">
+      </iframe>
+    </div>
+  </div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const channelBtns = document.querySelectorAll('.channel-btn');
+    const streamPlayer = document.getElementById('stream-player');
+    
+    channelBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Update active button
+        channelBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Get the secure token
+        const token = this.getAttribute('data-token');
+        
+        // Update iframe to use our secure proxy endpoint
+        streamPlayer.src = `/stream/${token}`;
+        
+        // Update URL without page reload using history API
+        history.pushState(null, null, `/ipl20-${token}`);
+      });
+    });
+  });
+</script>
+
+<div class="container">
+    <h1>Match Schedule</h1>
+    <a href="/" class="go-home-button">Go Home</a>
+    <div class="matches-grid" id="matchesContainer">
+        <!-- Match cards will be dynamically inserted here -->
+    </div>
+</div>
+
+<script>
+    // Match data
+    const matchesData = 
+    
+    [
+{
+"matchNumber": "Match 01",
+"team1": "Kolkata Knight Riders",
+"team2": "Royal Challengers Bengaluru",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"date": "22nd Mar",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 2 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 02",
+"team1": "Sunrisers Hyderabad",
+"team2": "Rajasthan Royals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"date": "23rd Mar",
+"time": "03:30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 03",
+"team1": "Chennai Super Kings",
+"team2": "Mumbai Indians",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"date": "23rd Mar",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 2 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 04",
+"team1": "Delhi Capitals",
+"team2": "Lucknow Super Giants",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"date": "24th Mar",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 05",
+"team1": "Gujarat Titans",
+"team2": "Punjab Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"date": "25th Mar",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 06",
+"team1": "Rajasthan Royals",
+"team2": "Kolkata Knight Riders",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"date": "26th Mar",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 07",
+"team1": "Sunrisers Hyderabad",
+"team2": "Lucknow Super Giants",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"date": "27th Mar",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 08",
+"team1": "Chennai Super Kings",
+"team2": "Royal Challengers Bengaluru",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"date": "28th Mar",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 09",
+"team1": "Gujarat Titans",
+"team2": "Mumbai Indians",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"date": "29th Mar",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 10",
+"team1": "Delhi Capitals",
+"team2": "Sunrisers Hyderabad",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"date": "30th Mar",
+"time": "03:30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 11",
+"team1": "Rajasthan Royals",
+"team2": "Chennai Super Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"date": "30th Mar",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 2 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 12",
+"team1": "Mumbai Indians",
+"team2": "Kolkata Knight Riders",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"date": "31st Mar",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 13",
+"team1": "Lucknow Super Giants",
+"team2": "Punjab Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"date": "1st Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 14",
+"team1": "Royal Challengers Bengaluru",
+"team2": "Gujarat Titans",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"date": "2nd Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 15",
+"team1": "Kolkata Knight Riders",
+"team2": "Sunrisers Hyderabad",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"date": "3rd Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 16",
+"team1": "Lucknow Super Giants",
+"team2": "Mumbai Indians",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"date": "4th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 17",
+"team1": "Chennai Super Kings",
+"team2": "Delhi Capitals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"date": "5th Apr",
+"time": "03:30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 18",
+"team1": "Punjab Kings",
+"team2": "Rajasthan Royals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"date": "5th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 19",
+"team1": "Kolkata Knight Riders",
+"team2": "Lucknow Super Giants",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"date": "6th Apr",
+"time": "03:30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 20",
+"team1": "Sunrisers Hyderabad",
+"team2": "Gujarat Titans",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"date": "6th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 21",
+"team1": "Mumbai Indians",
+"team2": "Royal Challengers Bengaluru",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"date": "7th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 22",
+"team1": "Punjab Kings",
+"team2": "Chennai Super Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"date": "8th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 23",
+"team1": "Gujarat Titans",
+"team2": "Rajasthan Royals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"date": "9th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 24",
+"team1": "Royal Challengers Bengaluru",
+"team2": "Delhi Capitals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"date": "10th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 25",
+"team1": "Chennai Super Kings",
+"team2": "Kolkata Knight Riders",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"date": "11th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 26",
+"team1": "Lucknow Super Giants",
+"team2": "Gujarat Titans",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"date": "12th Apr",
+"time": "03:30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 27",
+"team1": "Sunrisers Hyderabad",
+"team2": "Punjab Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"date": "12th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 28",
+"team1": "Rajasthan Royals",
+"team2": "Royal Challengers Bengaluru",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"date": "13th Apr",
+"time": "03:30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 29",
+"team1": "Delhi Capitals",
+"team2": "Mumbai Indians",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"date": "13th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 2 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 30",
+"team1": "Lucknow Super Giants",
+"team2": "Chennai Super Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"date": "14th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 31",
+"team1": "Punjab Kings",
+"team2": "Kolkata Knight Riders",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"date": "15th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 32",
+"team1": "Delhi Capitals",
+"team2": "Rajasthan Royals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"date": "16th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 33",
+"team1": "Mumbai Indians",
+"team2": "Sunrisers Hyderabad",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"date": "17th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 34",
+"team1": "Royal Challengers Bengaluru",
+"team2": "Punjab Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"date": "18th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 35",
+"team1": "Gujarat Titans",
+"team2": "Delhi Capitals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"date": "19th Apr",
+"time": "03.30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 36",
+"team1": "Rajasthan Royals",
+"team2": "Lucknow Super Giants",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"date": "19th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 37",
+"team1": "Punjab Kings",
+"team2": "Royal Challengers Bengaluru",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"date": "20th Apr",
+"time": "03.30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 38",
+"team1": "Mumbai Indians",
+"team2": "Chennai Super Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"date": "20th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 2 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 39",
+"team1": "Kolkata Knight Riders",
+"team2": "Gujarat Titans",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"date": "21st Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 40",
+"team1": "Lucknow Super Giants",
+"team2": "Delhi Capitals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"date": "22nd Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 41",
+"team1": "Sunrisers Hyderabad",
+"team2": "Mumbai Indians",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"date": "23rd Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 42",
+"team1": "Royal Challengers Bengaluru",
+"team2": "Rajasthan Royals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"date": "24th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 43",
+"team1": "Chennai Super Kings",
+"team2": "Sunrisers Hyderabad",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"date": "25th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 44",
+"team1": "Kolkata Knight Riders",
+"team2": "Punjab Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"date": "26th Apr",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 45",
+"team1": "Mumbai Indians",
+"team2": "Lucknow Super Giants",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"date": "27th Apr",
+"time": "3:30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 46",
+"team1": "Delhi Capitals",
+"team2": "Royal Challengers Bengaluru",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"date": "27th Apr",
+"time": "7:30 PM",
+"channels": "Star Sports 1 | Star Sports 2 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 47",
+"team1": "Rajasthan Royals",
+"team2": "Gujarat Titans",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"date": "28th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 48",
+"team1": "Delhi Capitals",
+"team2": "Kolkata Knight Riders",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"date": "29th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 49",
+"team1": "Chennai Super Kings",
+"team2": "Punjab Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"date": "30th Apr",
+"time": "07.30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 50",
+"team1": "Rajasthan Royals",
+"team2": "Mumbai Indians",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"date": "1st May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 51",
+"team1": "Gujarat Titans",
+"team2": "Sunrisers Hyderabad",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"date": "2nd May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 52",
+"team1": "Royal Challengers Bengaluru",
+"team2": "Chennai Super Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"date": "3rd May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 53",
+"team1": "Kolkata Knight Riders",
+"team2": "Rajasthan Royals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"date": "4th May",
+"time": "03:30 PM",
+"channels": ""
+},
+{
+"matchNumber": "Match 54",
+"team1": "Punjab Kings",
+"team2": "Lucknow Super Giants",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"date": "4th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 55",
+"team1": "Sunrisers Hyderabad",
+"team2": "Delhi Capitals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"date": "5th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 56",
+"team1": "Mumbai Indians",
+"team2": "Gujarat Titans",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"date": "6th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 57",
+"team1": "Kolkata Knight Riders",
+"team2": "Chennai Super Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"date": "7th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 58",
+"team1": "Punjab Kings",
+"team2": "Delhi Capitals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"date": "8th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 59",
+"team1": "Lucknow Super Giants",
+"team2": "Royal Challengers Bengaluru",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"date": "9th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 60",
+"team1": "Sunrisers Hyderabad",
+"team2": "Kolkata Knight Riders",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"date": "10th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 61",
+"team1": "Punjab Kings",
+"team2": "Mumbai Indians",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"date": "11th May",
+"time": "03:30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 62",
+"team1": "Delhi Capitals",
+"team2": "Gujarat Titans",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"date": "11th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 63",
+"team1": "Chennai Super Kings",
+"team2": "Rajasthan Royals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"date": "12th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 64",
+"team1": "Royal Challengers Bengaluru",
+"team2": "Sunrisers Hyderabad",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"date": "13th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 65",
+"team1": "Gujarat Titans",
+"team2": "Lucknow Super Giants",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"date": "14th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 66",
+"team1": "Mumbai Indians",
+"team2": "Delhi Capitals",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/dc-logo.jpg",
+"date": "15th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 67",
+"team1": "Rajasthan Royals",
+"team2": "Punjab Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+"date": "16th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 68",
+"team1": "Royal Challengers Bengaluru",
+"team2": "Kolkata Knight Riders",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rcb-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/kkr-logo.jpg",
+"date": "17th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 69",
+"team1": "Gujarat Titans",
+"team2": "Chennai Super Kings",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+"date": "18th May",
+"time": "03:30 PM",
+"channels": "Star Sports 2"
+},
+{
+"matchNumber": "Match 70",
+"team1": "Lucknow Super Giants",
+"team2": "Sunrisers Hyderabad",
+"team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/lsg-logo.jpg",
+"team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
+"date": "18th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 71",
+"team1": "Qualifier 1",
+"team2": "",
+"team1Logo": "",
+"team2Logo": "",
+"date": "20th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 2 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 72",
+"team1": "Eliminator",
+"team2": "",
+"team1Logo": "",
+"team2Logo": "",
+"date": "21st May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 2 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 73",
+"team1": "Qualifier 2",
+"team2": "",
+"team1Logo": "",
+"team2Logo": "",
+"date": "23rd May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 2 | Star Sports 1 HD"
+},
+{
+"matchNumber": "Match 74",
+"team1": "Final",
+"team2": "",
+"team1Logo": "",
+"team2Logo": "",
+"date": "25th May",
+"time": "07:30 PM",
+"channels": "Star Sports 1 | Star Sports 2 | Star Sports 1 HD"
+}
+]
+;
+
+    // Function to parse date from format like "24th Mar"
+    function parseDate(dateStr) {
+        const dateParts = dateStr.match(/(\d+)(st|nd|rd|th) (\w+)/);
+        if (!dateParts) return null;
+        
+        const day = parseInt(dateParts[1]);
+        const month = dateParts[3];
+        const monthMap = {
+            'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+            'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+        };
+        
+        // Current year (assuming all matches are in current year)
+        const year = new Date().getFullYear();
+        return new Date(year, monthMap[month], day);
+    }
+
+    // Function to check if two dates are the same day
+    function isSameDay(date1, date2) {
+        return date1.getDate() === date2.getDate() &&
+              date1.getMonth() === date2.getMonth() &&
+              date1.getFullYear() === date2.getFullYear();
+    }
+
+    // Function to render matches
+    function renderMatches() {
+        const container = document.getElementById('matchesContainer');
+        container.innerHTML = ''; // Clear container
+        
+        // Get current date in India (IST is UTC+5:30)
+        const now = new Date();
+        const offsetIST = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+        const nowIST = new Date(now.getTime() + (offsetIST + now.getTimezoneOffset() * 60 * 1000));
+        
+        // Filter matches to show only current and future matches
+        const validMatches = matchesData.filter(match => {
+            const matchDate = parseDate(match.date);
+            return matchDate && (matchDate >= nowIST || isSameDay(matchDate, nowIST));
+        });
+        
+        // Render each match
+        validMatches.forEach(match => {
+            const matchDate = parseDate(match.date);
+            const isToday = isSameDay(matchDate, nowIST);
+            
+            const matchCard = document.createElement('div');
+            matchCard.className = 'match-card';
+            
+            // Add "TODAY" tag if it's today's match
+            if (isToday) {
+                const todayTag = document.createElement('div');
+                todayTag.className = 'today-tag';
+                todayTag.textContent = 'TODAY';
+                matchCard.appendChild(todayTag);
+            }
+            
+            matchCard.innerHTML += `
+                <div class="match-number">${match.matchNumber}</div>
+                <div class="teams-container">
+                    <div class="team">
+                        <div class="team-logo">
+                            <img src="${match.team1Logo}" alt="${match.team1}">
+                        </div>
+                        <div class="team-name">${match.team1}</div>
+                    </div>
+                    <div class="vs">vs</div>
+                    <div class="team">
+                        <div class="team-logo">
+                            <img src="${match.team2Logo}" alt="${match.team2}">
+                        </div>
+                        <div class="team-name">${match.team2}</div>
+                    </div>
+                </div>
+                <div class="match-details">
+                    <div class="match-date">${match.date}</div>
+                    <div class="match-time">${match.time}</div>
+                    <div class="match-channels">${match.channels}</div>
+                </div>
+            `;
+            
+            // Add "Watch Now" button only for today's match
+            if (isToday) {
+                const watchButton = document.createElement('a');
+                watchButton.className = 'watch-now';
+                watchButton.href = 'https://criclk.com/';
+                watchButton.textContent = 'Watch Now';
+                matchCard.appendChild(watchButton);
+            }
+            
+            container.appendChild(matchCard);
+        });
+        
+        // Display message if no matches found
+        if (validMatches.length === 0) {
+            container.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 20px; color: #666;">No upcoming matches scheduled.</p>';
+        }
+    }
+    
+    // Initialize the page
+    renderMatches();
+</script>
+<%- include('partials/footer') %>

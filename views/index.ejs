@@ -1,0 +1,121 @@
+<%- include('partials/header') %>
+
+<section class="hero">
+  <div class="slider-container">
+    <div class="slider">
+      <div class="slide active">
+        <img src="/images/cricket-slide1.jpg" alt="IPL Cricket">
+        <div class="slide-content">
+          <h2>Watch IPL 2025 Live</h2>
+          <p>Catch all the action from the Indian Premier League</p>
+          <a href="/ipl20" class="btn">Watch Now</a>
+        </div>
+      </div>
+      <div class="slide">
+        <img src="/images/cricket-slide2.jpg" alt="PSL Cricket">
+        <div class="slide-content">
+          <h2>PSL T20 Live Streaming</h2>
+          <p>Don't miss any moment of Pakistan Super League</p>
+          <a href="/pslt20" class="btn">Watch Now</a>
+        </div>
+      </div>
+      <div class="slide">
+        <img src="/images/cricket-slide3.jpg" alt="Live Cricket">
+        <div class="slide-content">
+          <h2>Live Cricket Matches</h2>
+          <p>Stream international cricket matches live</p>
+          <a href="/live-cricket" class="btn">Watch Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="slider-nav">
+      <button class="prev"><i class="fas fa-chevron-left"></i></button>
+      <div class="dots">
+        <span class="dot active" data-slide="0"></span>
+        <span class="dot" data-slide="1"></span>
+        <span class="dot" data-slide="2"></span>
+      </div>
+      <button class="next"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>
+</section>
+
+<section class="featured-channels">
+  <h2>Featured Channels</h2>
+  <div class="channel-grid">
+    <div class="channel-card">
+      <div class="channel-image">
+        <img src="/images/star-sports.jpg" alt="Star Sports HD">
+      </div>
+      <div class="channel-info">
+        <h3>Star Sports HD</h3>
+        <p>Watch IPL and international cricket live</p>
+        <a href="/ipl20" class="btn">Watch Now</a>
+      </div>
+    </div>
+    <div class="channel-card">
+      <div class="channel-image">
+        <img src="/images/sky-sports.jpg" alt="Sky Sports Cricket HD">
+      </div>
+      <div class="channel-info">
+        <h3>Sky Sports Cricket HD</h3>
+        <p>Premier cricket coverage from around the world</p>
+        <a href="/ipl20" class="btn">Watch Now</a>
+      </div>
+    </div>
+    <div class="channel-card">
+      <div class="channel-image">
+        <img src="/images/willow-cricket.jpg" alt="Willow Cricket HD">
+      </div>
+      <div class="channel-info">
+        <h3>Willow Cricket HD</h3>
+        <p>Exclusive cricket content in HD quality</p>
+        <a href="/ipl20" class="btn">Watch Now</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="matches">
+  <h2>Upcoming Matches</h2>
+  <div class="match-list">
+    <div class="match-card">
+      <div class="teams">
+        <span class="team">MI</span>
+        <span class="vs">VS</span>
+        <span class="team">CSK</span>
+      </div>
+      <div class="match-info">
+        <p class="tournament">IPL 2025</p>
+        <p class="time">Today, 7:30 PM</p>
+      </div>
+      <a href="/ipl20" class="btn btn-sm">Watch</a>
+    </div>
+    <div class="match-card">
+      <div class="teams">
+        <span class="team">RCB</span>
+        <span class="vs">VS</span>
+        <span class="team">KKR</span>
+      </div>
+      <div class="match-info">
+        <p class="tournament">IPL 2025</p>
+        <p class="time">Tomorrow, 3:30 PM</p>
+      </div>
+      <a href="/ipl20" class="btn btn-sm">Watch</a>
+    </div>
+    <div class="match-card">
+      <div class="teams">
+        <span class="team">LHQ</span>
+        <span class="vs">VS</span>
+        <span class="team">KAR</span>
+      </div>
+      <div class="match-info">
+        <p class="tournament">PSL T20</p>
+        <p class="time">Today, 8:00 PM</p>
+      </div>
+      <a href="/pslt20" class="btn btn-sm">Watch</a>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
