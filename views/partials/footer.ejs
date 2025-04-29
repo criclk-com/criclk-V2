@@ -1,52 +1,16 @@
 </main>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-logo">
-                <i class="fas fa-cricket fa-solid fa-tv"></i> CricketStream
-            </div>
-            <div class="footer-links">
-                <a href="/">Home</a>
-                <a href="/ipl20">IPL20</a>
-                <a href="/pslt20">PSLT20</a>
-                <a href="/live-cricket">Live Cricket</a>
-                <a href="/all-channels">All Channels</a>
-                <a href="/schedule">Schedule</a>
-            </div>
-            <div class="social-links">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-            </div>
-            <p class="copyright">&copy; 2025 CricketStream. All rights reserved.</p>
-            <p class="disclaimer">This is a demo streaming site for educational purposes only.</p>
-        </div>
-    </footer>
+<footer>
+  <div class="footer-content">
+    <p>&copy; 2025 CricketStream. All rights reserved.</p>
+    <div class="social-links">
+      <a href="#"><i class="fab fa-facebook"></i></a>
+      <a href="#"><i class="fab fa-twitter"></i></a>
+      <a href="#"><i class="fab fa-instagram"></i></a>
+    </div>
+  </div>
+</footer>
 
-    <script>
-        // Mobile navigation toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const hamburger = document.querySelector('.hamburger');
-            const navLinks = document.querySelector('.nav-links');
-            
-            if (hamburger) {
-                hamburger.addEventListener('click', function() {
-                    hamburger.classList.toggle('active');
-                    navLinks.classList.toggle('active');
-                });
-            }
-            
-            // Close mobile menu when clicking a nav link
-            const navItems = document.querySelectorAll('.nav-links li a');
-            navItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    if (hamburger.classList.contains('active')) {
-                        hamburger.classList.remove('active');
-                        navLinks.classList.remove('active');
-                    }
-                });
-            });
-        });
-    </script>
+<script src="/js/script.js"></script>
 </body>
 </html>
