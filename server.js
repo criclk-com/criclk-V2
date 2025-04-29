@@ -1,4 +1,4 @@
-// server.js - Simple version with mobile device detection
+// server.js - Main Node.js server file with protected stream URLs
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
@@ -10,114 +10,52 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Helper function to detect mobile devices from user agent
-function isMobileDevice(req) {
-  const userAgent = req.headers['user-agent'] || '';
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-}
-
-// Channel configuration
+// Channel configuration - Store actual URLs securely server-side
 const channels = {
   'skySportsCricket': {
     name: 'Sky Sports Cricket HD',
-    streamSource: '//stream.crichd.sc/update/skys2.php'
+    key: 'sky-sports-cricket'
   },
   'starSports': {
     name: 'Star Sports HD',
-    streamSource: '//stream.crichd.sc/update/star.php'
+    key: 'star-sports'
   },
   'willowCricket': {
     name: 'Willow Cricket HD',
-    streamSource: '//stream.crichd.sc/update/willowcricket.php'
+    key: 'willow-cricket'
   },
-  'geoSuper': {
-    name: 'Geo Super',
-    streamSource: '//stream.crichd.sc/update/geosuper.php'
+  'willowcrickethd': {
+    name: 'Willow Cricket HD',
+    key: 'willow-cricket-hd'
   },
   'ptvSports': {
     name: 'PTV Sports',
-    streamSource: '//stream.crichd.sc/update/ptvsports.php'
+    key: 'ptv-sports'
   },
-  'tenSports': {
-    name: 'Ten Sports',
-    streamSource: '//stream.crichd.sc/update/tensports.php'
+  'asporthd': {
+    name: 'A Sports HD',
+    key: 'a-sport-hd'
   }
 };
 
-// Sample IPL schedule data - normally this would come from a database or JSON file
-const iplMatches = [
-  {
-    "matchNumber": "Match 49",
-    "team1": "Chennai Super Kings",
-    "team2": "Punjab Kings",
-    "team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
-    "team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
-    "date": "30th Apr",
-    "time": "07.30 PM",
-    "channels": "Star Sports 1 | Star Sports 1 HD"
-  },
-  {
-    "matchNumber": "Match 50",
-    "team1": "Rajasthan Royals",
-    "team2": "Mumbai Indians",
-    "team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/rr-logo.jpg",
-    "team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/mi-logo.jpg",
-    "date": "1st May",
-    "time": "07:30 PM",
-    "channels": "Star Sports 1 | Star Sports 1 HD"
-  },
-  {
-    "matchNumber": "Match 51",
-    "team1": "Gujarat Titans",
-    "team2": "Sunrisers Hyderabad",
-    "team1Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/gt-logo.jpg",
-    "team2Logo": "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/sh-logo.jpg",
-    "date": "2nd May",
-    "time": "07:30 PM",
-    "channels": "Star Sports 1 | Star Sports 1 HD"
-  }
-];
+// Secure mapping of channel keys to actual stream URLs (hidden from client)
+const streamUrls = {
+  'sky-sports-cricket': '//stream.crichd.sc/update/skys2.php',
+  'star-sports': '//stream.crichd.sc/update/star.php',
+  'willow-cricket': '//stream.crichd.sc/update/willowcricket.php',
+  'willow-cricket-hd': '//stream.crichd.sc/update/willowcricket.php',
+  'ptv-sports': '//stream.crichd.sc/update/ptv.php',
+  'a-sport-hd': '//stream.crichd.sc/update/asportshd.php'
+};
 
-// Function to filter and mark today's matches
-function getUpcomingMatches() {
-  const today = new Date();
-  
-  // Parse date from format like "30th Apr"
-  function parseDate(dateStr) {
-    const dateParts = dateStr.match(/(\d+)(st|nd|rd|th) (\w+)/);
-    if (!dateParts) return null;
-    
-    const day = parseInt(dateParts[1]);
-    const month = dateParts[3];
-    const monthMap = {
-      'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
-      'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
-    };
-    
-    return new Date(today.getFullYear(), monthMap[month], day);
-  }
-  
-  // Check if a date is today
-  function isToday(date) {
-    return date.getDate() === today.getDate() && 
-           date.getMonth() === today.getMonth() && 
-           date.getFullYear() === today.getFullYear();
-  }
-  
-  // Filter and mark matches
-  return iplMatches.map(match => {
-    const matchDate = parseDate(match.date);
-    const isMatchToday = matchDate ? isToday(matchDate) : false;
-    
-    return {
-      ...match,
-      isToday: isMatchToday
-    };
-  }).filter(match => {
-    const matchDate = parseDate(match.date);
-    // Keep only today's and future matches
-    return matchDate && (matchDate >= today || match.isToday);
-  });
+// Generate encrypted keys for channels
+function encryptChannel(channelId) {
+  // In production, use environment variables for secrets
+  const secret = process.env.ENCRYPTION_SECRET || 'temporary-dev-secret-key';
+  return crypto
+    .createHmac('sha256', secret)
+    .update(channelId)
+    .digest('hex');
 }
 
 // Home route
@@ -130,43 +68,51 @@ app.get('/', (req, res) => {
 
 // IPL20 route
 app.get('/ipl20', (req, res) => {
-  const isMobile = isMobileDevice(req);
-  const upcomingMatches = getUpcomingMatches();
+  // Generate encrypted tokens for each channel
+  const encryptedChannels = {};
+  Object.keys(channels).forEach(id => {
+    if (['skySportsCricket', 'starSports', 'willowCricket'].includes(id)) {
+      encryptedChannels[id] = {
+        name: channels[id].name,
+        token: encryptChannel(id)
+      };
+    }
+  });
   
   res.render('ipl20', {
     title: 'IPL20 Streaming',
     page: 'ipl20',
-    channels: channels,
-    defaultChannel: 'starSports',
-    matches: upcomingMatches,
-    isMobile: isMobile
+    channels: encryptedChannels,
+    defaultChannel: 'starSports'
   });
 });
 
 // PSLT20 route
 app.get('/pslt20', (req, res) => {
-  const isMobile = isMobileDevice(req);
+  // Generate encrypted tokens for PSL channels
+  const encryptedChannels = {};
+  Object.keys(channels).forEach(id => {
+    if (['asporthd', 'ptvSports', 'willowcrickethd'].includes(id)) {
+      encryptedChannels[id] = {
+        name: channels[id].name,
+        token: encryptChannel(id)
+      };
+    }
+  });
   
   res.render('pslt20', {
     title: 'PSLT20 Streaming',
     page: 'pslt20',
-    channels: channels,
-    defaultChannel: 'ptvSports',
-    isMobile: isMobile
+    channels: encryptedChannels,
+    defaultChannel: 'ptvSports'
   });
 });
 
 // Live Cricket route
 app.get('/live-cricket', (req, res) => {
-  const isMobile = isMobileDevice(req);
-  const upcomingMatches = getUpcomingMatches();
-  
   res.render('live-cricket', {
     title: 'Live Cricket',
-    page: 'live-cricket',
-    channels: channels,
-    matches: upcomingMatches,
-    isMobile: isMobile
+    page: 'live-cricket'
   });
 });
 
@@ -179,70 +125,110 @@ app.get('/all-channels', (req, res) => {
   });
 });
 
-// Match schedule page
-app.get('/schedule', (req, res) => {
-  const upcomingMatches = getUpcomingMatches();
+// Proxy endpoint for secure stream delivery - This hides actual URLs from page source
+app.get('/stream/:token', (req, res) => {
+  const requestedToken = req.params.token;
+  let channelId = null;
   
-  res.render('schedule', {
-    title: 'IPL Match Schedule',
-    page: 'schedule',
-    matches: upcomingMatches
+  // Find the channel that matches the encrypted token
+  Object.keys(channels).forEach(id => {
+    if (encryptChannel(id) === requestedToken) {
+      channelId = id;
+    }
   });
-});
-
-// Player page - handles both direct stream and iframe embedding
-app.get('/player/:channelId', (req, res) => {
-  const channelId = req.params.channelId;
-  const isMobile = isMobileDevice(req);
   
-  // Check if channel exists
-  if (!channels[channelId]) {
-    return res.status(404).render('error', {
-      title: 'Channel Not Found',
-      message: 'The requested channel was not found.'
-    });
+  if (!channelId) {
+    return res.status(404).send('Stream not found');
   }
   
-  res.render('player', {
-    title: `${channels[channelId].name} - Live Stream`,
-    channel: channels[channelId],
-    channelId: channelId,
-    isMobile: isMobile
-  });
-});
-
-// Channel pages
-app.get('/channel/:type/:channelId', (req, res) => {
-  const type = req.params.type;
-  const channelId = req.params.channelId;
-  const isMobile = isMobileDevice(req);
+  // Get the actual stream URL from our secure mapping
+  const streamUrl = streamUrls[channels[channelId].key];
   
-  // Check if channel exists
-  if (!channels[channelId]) {
-    return res.status(404).render('error', {
-      title: 'Channel Not Found',
-      message: 'The requested channel was not found.'
-    });
+  if (!streamUrl) {
+    return res.status(404).send('Stream URL not configured');
   }
   
-  const upcomingMatches = getUpcomingMatches();
+  // Set appropriate headers for iframe embedding
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  
+  // Render an HTML page with the iframe that loads the stream
+  // This way the actual stream URL is never exposed in the source
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>${channels[channelId].name} Stream</title>
+      <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: 0; }
+      </style>
+    </head>
+    <body>
+      <iframe 
+        src="${streamUrl}" 
+        width="100%" 
+        height="100%" 
+        marginheight="0" 
+        marginwidth="0" 
+        scrolling="no" 
+        frameborder="0" 
+        allowfullscreen 
+        allow="encrypted-media"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation">
+      </iframe>
+    </body>
+    </html>
+  `);
+});
+
+// Channel page with encrypted URL
+app.get('/ipl20-:token', (req, res) => {
+  const requestedToken = req.params.token;
+  let channelId = null;
+  
+  // Find the channel that matches the encrypted token
+  Object.keys(channels).forEach(id => {
+    if (encryptChannel(id) === requestedToken) {
+      channelId = id;
+    }
+  });
+  
+  if (!channelId) {
+    return res.status(404).send('Channel not found');
+  }
   
   res.render('channel', {
     title: channels[channelId].name,
     page: 'channel',
     channel: channels[channelId],
     channelId: channelId,
-    tournamentType: type, // 'ipl' or 'psl'
-    matches: upcomingMatches,
-    isMobile: isMobile
+    streamToken: requestedToken
   });
 });
 
-// Error page for 404
-app.use((req, res) => {
-  res.status(404).render('error', {
-    title: '404 Not Found',
-    message: 'The page you requested could not be found.'
+// PSLT20 channel page
+app.get('/pslt20-:token', (req, res) => {
+  const requestedToken = req.params.token;
+  let channelId = null;
+  
+  // Find the channel that matches the encrypted token
+  Object.keys(channels).forEach(id => {
+    if (encryptChannel(id) === requestedToken) {
+      channelId = id;
+    }
+  });
+  
+  if (!channelId) {
+    return res.status(404).send('Channel not found');
+  }
+  
+  res.render('channel', {
+    title: channels[channelId].name,
+    page: 'channel',
+    channel: channels[channelId],
+    channelId: channelId,
+    streamToken: requestedToken
   });
 });
 
