@@ -4,21 +4,20 @@
   <h1><%= channel.name %> Live Stream</h1>
   
   <div class="player-container">
-    <div class="player-wrapper">
-      <!-- Using the secure proxy endpoint instead of direct iframe source -->
-      <iframe id="stream-player" 
-        src="/stream/<%= streamToken %>" 
-        width="100%" 
-        height="500px" 
-        marginheight="0" 
-        marginwidth="0" 
-        scrolling="no" 
-        frameborder="0" 
-        allowfullscreen 
-        allow="encrypted-media"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation">
-      </iframe>
+    <div class="player-wrapper" id="player-wrapper">
+      <!-- Loading placeholder -->
+      <div class="player-placeholder">
+        <div class="loading-spinner"></div>
+        <p>Loading stream...</p>
+      </div>
     </div>
+    
+    <!-- Mobile helper message -->
+    <% if (typeof isMobile !== 'undefined' && isMobile) { %>
+    <div class="mobile-helper">
+      <p><i class="fas fa-mobile-alt"></i> For the best viewing experience, rotate your device to landscape mode and tap the player to go fullscreen.</p>
+    </div>
+    <% } %>
   </div>
   
   <div class="channel-info">
@@ -38,13 +37,235 @@
     <% } %>
     
     <div class="back-link">
-      <% if (channelId === 'ptvSports' || channelId === 'geoSuper' || channelId === 'tenSports') { %>
+      <% if (tournamentType === 'psl') { %>
         <a href="/pslt20" class="btn"><i class="fas fa-arrow-left"></i> Back to Channel Selection</a>
       <% } else { %>
         <a href="/ipl20" class="btn"><i class="fas fa-arrow-left"></i> Back to Channel Selection</a>
       <% } %>
     </div>
   </div>
+  
+  <!-- Today's Matches Section -->
+  <% if (matches && matches.length > 0) { %>
+  <div class="todays-matches">
+    <h2>Today's Matches</h2>
+    <div class="matches-grid">
+      <% 
+      // Filter to show only today's matches
+      const todayMatches = matches.filter(match => match.isToday);
+      if (todayMatches.length > 0) { 
+      %>
+        <% todayMatches.forEach(function(match) { %>
+          <div class="match-card horizontal">
+            <div class="teams-container">
+              <div class="team">
+                <div class="team-logo">
+                  <img src="<%= match.team1Logo %>" alt="<%= match.team1 %>">
+                </div>
+                <div class="team-name"><%= match.team1 %></div>
+              </div>
+              <div class="vs">vs</div>
+              <div class="team">
+                <div class="team-logo">
+                  <img src="<%= match.team2Logo ? match.team2Logo : '/images/default-team-logo.png' %>" alt="<%= match.team2 ? match.team2 : 'TBD' %>">
+                </div>
+                <div class="team-name"><%= match.team2 ? match.team2 : 'TBD' %></div>
+              </div>
+            </div>
+            <div class="match-info">
+              <div class="match-number"><%= match.matchNumber %></div>
+              <div class="match-time"><%= match.time %></div>
+              <div class="match-channels"><%= match.channels %></div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <p class="no-matches">No matches scheduled for today.</p>
+      <% } %>
+    </div>
+  </div>
+  <% } %>
 </section>
+
+<style>
+  .player-placeholder {
+    background-color: #1a1a2e;
+    color: white;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+  }
+  
+  .loading-spinner {
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 5px solid #e91e63;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .mobile-helper {
+    background-color: #f8f9fa;
+    border-left: 4px solid #e91e63;
+    padding: 10px 15px;
+    margin-top: 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .mobile-helper i {
+    color: #e91e63;
+    margin-right: 5px;
+  }
+  
+  .match-card.horizontal {
+    display: flex;
+    justify-content: space-between;
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .match-card.horizontal .teams-container {
+    display: flex;
+    align-items: center;
+    min-width: 60%;
+  }
+  
+  .match-card.horizontal .team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .match-card.horizontal .team-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+  
+  .match-card.horizontal .team-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  
+  .match-card.horizontal .vs {
+    margin: 0 15px;
+    font-weight: bold;
+  }
+  
+  .match-card.horizontal .match-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+  }
+  
+  .match-card.horizontal .match-number {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .match-card.horizontal .match-time {
+    color: #e91e63;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .match-card.horizontal .match-channels {
+    font-size: 0.8rem;
+    color: #666;
+  }
+  
+  .no-matches {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+  }
+  
+  @media (max-width: 768px) {
+    .match-card.horizontal {
+      flex-direction: column;
+    }
+    
+    .match-card.horizontal .match-info {
+      margin-top: 15px;
+      align-items: center;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const playerWrapper = document.getElementById('player-wrapper');
+    const channelId = '<%= channelId %>';
+    
+    // Function to load the iframe
+    function loadPlayer() {
+      // Show loading state first
+      playerWrapper.innerHTML = `
+        <div class="player-placeholder">
+          <div class="loading-spinner"></div>
+          <p>Loading <%= channel.name %>...</p>
+        </div>
+      `;
+      
+      // Create the iframe container
+      const container = document.createElement('div');
+      container.className = 'iframe-container';
+      container.style.height = '500px';
+      container.style.borderRadius = '8px';
+      container.style.overflow = 'hidden';
+      container.style.position = 'relative';
+      
+      // Create the iframe
+      const iframe = document.createElement('iframe');
+      iframe.src = '/player/<%= channelId %>';
+      iframe.width = '100%';
+      iframe.height = '100%';
+      iframe.style.border = 'none';
+      iframe.allowFullscreen = true;
+      
+      // Add error handling
+      iframe.onerror = function() {
+        playerWrapper.innerHTML = `
+          <div class="player-placeholder">
+            <div style="color: #ff3860; font-size: 36px; margin-bottom: 20px;">
+              <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <p>Error loading stream. Please try again.</p>
+            <button class="btn" style="margin-top: 20px;" onclick="loadPlayer()">Retry</button>
+          </div>
+        `;
+      };
+      
+      // Add to the page
+      container.appendChild(iframe);
+      playerWrapper.innerHTML = '';
+      playerWrapper.appendChild(container);
+    }
+    
+    // Load the player
+    loadPlayer();
+  });
+</script>
 
 <%- include('partials/footer') %>
