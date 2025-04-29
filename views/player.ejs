@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script disable-devtool-auto src="https://cdnjs.cloudflare.com/ajax/libs/disable-devtool/0.3.4/disable-devtool.min.js"></script>
+    <title><%= title %></title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+        
+        .player-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .watermark {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 100;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .loading-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            z-index: 10;
+        }
+        
+        .loading-spinner {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 5px solid #e91e63;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-family: Arial, sans-serif;
+            z-index: 20;
+        }
+        
+        .error-container h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .error-container p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 0 20px;
+        }
+        
+        .retry-btn {
+            background-color: #e91e63;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .toggle-fullscreen {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 100;
+            display: none; /* Only show on mobile */
+        }
+    </style>
+    <script>
+        // Function to check if device is mobile
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        // Function to toggle fullscreen
+        function toggleFullscreen() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                const playerWrapper = document.querySelector('.player-wrapper');
+                if (playerWrapper.requestFullscreen) {
+                    playerWrapper.requestFullscreen();
+                } else if (playerWrapper.webkitRequestFullscreen) {
+                    playerWrapper.webkitRequestFullscreen();
+                } else if (playerWrapper.mozRequestFullScreen) {
+                    playerWrapper.mozRequestFullScreen();
+                } else if (playerWrapper.msRequestFullscreen) {
+                    playerWrapper.msRequestFullscreen();
+                }
+            }
+        }
+        
+        // Load the iframe with different sandbox attributes based on device
+        function loadStream() {
+            const streamSource = "<%= streamSource %>";
+            const iframeContainer = document.getElementById('iframe-container');
+            const loadingContainer = document.getElementById('loading-container');
+            
+            // Create the iframe element
+            const iframe = document.createElement('iframe');
+            
+            // Set common attributes
+            iframe.id = 'stream-iframe';
+            iframe.allow = 'fullscreen; encrypted-media';
+            iframe.allowFullscreen = true;
+            
+            // Set sandbox attributes - less restrictive on mobile
+            if (isMobile()) {
+                // For mobile: Include all needed permissions but exclude modals
+                iframe.sandbox = 'allow-scripts allow-same-origin allow-forms allow-presentation allow-popups';
+            } else {
+                // For desktop: Standard sandbox
+                iframe.sandbox = 'allow-scripts allow-same-origin allow-forms allow-presentation';
+            }
+            
+            // Set the source and error handlers
+            iframe.onload = function() {
+                loadingContainer.style.display = 'none';
+                // Show fullscreen button on mobile
+                if (isMobile()) {
+                    document.getElementById('toggle-fullscreen').style.display = 'block';
+                }
+            };
+            
+            iframe.onerror = function() {
+                loadingContainer.style.display = 'none';
+                document.getElementById('error-container').style.display = 'flex';
+            };
+            
+            iframe.src = streamSource;
+            
+            // Add to the page
+            iframeContainer.appendChild(iframe);
+            
+            // Set session timeout (15 minutes)
+            setTimeout(function() {
+                document.getElementById('session-expired').style.display = 'flex';
+                if (iframe) {
+                    iframe.style.display = 'none';
+                }
+            }, 15 * 60 * 1000);
+        }
+        
+        // Initialize when the page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            loadStream();
+            
+            // Add fullscreen toggle listener
+            document.getElementById('toggle-fullscreen').addEventListener('click', toggleFullscreen);
+            
+            // Add retry button handler
+            document.getElementById('retry-button').addEventListener('click', function() {
+                window.location.reload();
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="player-wrapper">
+        <div id="iframe-container"></div>
+        
+        <div id="loading-container" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Loading stream...</p>
+        </div>
+        
+        <div id="error-container" class="error-container">
+            <h2>Stream Error</h2>
+            <p>There was a problem loading the stream. This can happen sometimes on mobile devices.</p>
+            <p>Try switching to landscape mode or using a different browser.</p>
+            <button id="retry-button" class="retry-btn">Retry Stream</button>
+        </div>
+        
+        <div id="session-expired" class="error-container">
+            <h2>Session Expired</h2>
+            <p>Your viewing session has timed out for security reasons.</p>
+            <button class="retry-btn" onclick="window.location.reload()">Refresh Stream</button>
+        </div>
+        
+        <button id="toggle-fullscreen" class="toggle-fullscreen">
+            <i class="fas fa-expand"></i> Fullscreen
+        </button>
+        
+        <div class="watermark">CricketStream.com</div>
+    </div>
+</body>
+</html>
