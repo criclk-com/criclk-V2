@@ -1,6 +1,6 @@
 <%- include('partials/header') %>
 
-<section class="hero">
+<section class="hero <%= isMobile ? 'desktop-mode' : '' %>">
   <div class="slider-container">
     <div class="slider">
       <div class="slide active">
@@ -40,6 +40,17 @@
   </div>
 </section>
 
+<% if (isMobile) { %>
+<div class="mobile-notice">
+  <div class="notice-content">
+    <i class="fas fa-mobile-alt"></i>
+    <h3>Mobile Device Detected</h3>
+    <p>For the best streaming experience, your device will use desktop mode automatically when playing streams.</p>
+    <button class="btn close-notice">Got it</button>
+  </div>
+</div>
+<% } %>
+
 <section class="featured-channels">
   <h2>Featured Channels</h2>
   <div class="channel-grid">
@@ -50,7 +61,7 @@
       <div class="channel-info">
         <h3>Star Sports HD</h3>
         <p>Watch IPL and international cricket live</p>
-        <a href="/ipl20" class="btn">Watch Now</a>
+        <a href="/player/starSports" class="btn">Watch Now</a>
       </div>
     </div>
     <div class="channel-card">
@@ -60,7 +71,7 @@
       <div class="channel-info">
         <h3>Sky Sports Cricket HD</h3>
         <p>Premier cricket coverage from around the world</p>
-        <a href="/ipl20" class="btn">Watch Now</a>
+        <a href="/player/skySportsCricket" class="btn">Watch Now</a>
       </div>
     </div>
     <div class="channel-card">
@@ -70,52 +81,150 @@
       <div class="channel-info">
         <h3>Willow Cricket HD</h3>
         <p>Exclusive cricket content in HD quality</p>
-        <a href="/ipl20" class="btn">Watch Now</a>
+        <a href="/player/willowCricket" class="btn">Watch Now</a>
       </div>
     </div>
   </div>
 </section>
 
 <section class="matches">
-  <h2>Upcoming Matches</h2>
-  <div class="match-list">
-    <div class="match-card">
-      <div class="teams">
-        <span class="team">MI</span>
-        <span class="vs">VS</span>
-        <span class="team">CSK</span>
-      </div>
-      <div class="match-info">
-        <p class="tournament">IPL 2025</p>
-        <p class="time">Today, 7:30 PM</p>
-      </div>
-      <a href="/ipl20" class="btn btn-sm">Watch</a>
-    </div>
-    <div class="match-card">
-      <div class="teams">
-        <span class="team">RCB</span>
-        <span class="vs">VS</span>
-        <span class="team">KKR</span>
-      </div>
-      <div class="match-info">
-        <p class="tournament">IPL 2025</p>
-        <p class="time">Tomorrow, 3:30 PM</p>
-      </div>
-      <a href="/ipl20" class="btn btn-sm">Watch</a>
-    </div>
-    <div class="match-card">
-      <div class="teams">
-        <span class="team">LHQ</span>
-        <span class="vs">VS</span>
-        <span class="team">KAR</span>
-      </div>
-      <div class="match-info">
-        <p class="tournament">PSL T20</p>
-        <p class="time">Today, 8:00 PM</p>
-      </div>
-      <a href="/pslt20" class="btn btn-sm">Watch</a>
+  <h2>Today's Matches</h2>
+  <div class="match-list" id="todayMatches">
+    <!-- Today's matches will be loaded via JavaScript -->
+    <div class="loading-matches">
+      <div class="spinner"></div>
+      <p>Loading today's matches...</p>
     </div>
   </div>
 </section>
+
+<style>
+  /* Mobile Notice */
+  .mobile-notice {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .notice-content {
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .notice-content i {
+    font-size: 40px;
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+  }
+  
+  .notice-content h3 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: var(--dark-color);
+  }
+  
+  .notice-content p {
+    margin-bottom: 20px;
+    color: var(--gray-color);
+  }
+  
+  .loading-matches {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+    color: var(--gray-color);
+  }
+  
+  .spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid var(--secondary-color);
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+
+<script>
+  // Close mobile notice
+  document.addEventListener('DOMContentLoaded', function() {
+    const mobileNotice = document.querySelector('.mobile-notice');
+    const closeNoticeBtn = document.querySelector('.close-notice');
+    
+    if (closeNoticeBtn && mobileNotice) {
+      closeNoticeBtn.addEventListener('click', function() {
+        mobileNotice.style.display = 'none';
+      });
+    }
+    
+    // Load today's matches
+    loadTodayMatches();
+  });
+  
+  // Function to load today's matches
+  function loadTodayMatches() {
+    // This would normally be an API call, but we'll simulate with sample data
+    const matchesContainer = document.getElementById('todayMatches');
+    
+    // Sample matches data (in a real app, this would come from the server)
+    const todayMatches = [
+      {
+        team1: "Chennai Super Kings",
+        team2: "Punjab Kings",
+        team1Logo: "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/csk-logo.jpg",
+        team2Logo: "https://s3.ap-southeast-1.amazonaws.com/dlg.dialog.lk/s3fs-public/2024-03/pk-logo.jpg",
+        time: "07:30 PM",
+        tournament: "IPL 2025"
+      }
+    ];
+    
+    // Clear loading state
+    matchesContainer.innerHTML = '';
+    
+    if (todayMatches.length > 0) {
+      // Create match cards
+      todayMatches.forEach(match => {
+        const matchCard = document.createElement('div');
+        matchCard.className = 'match-card';
+        
+        matchCard.innerHTML = `
+          <div class="teams">
+            <span class="team">${match.team1}</span>
+            <span class="vs">VS</span>
+            <span class="team">${match.team2}</span>
+          </div>
+          <div class="match-info">
+            <p class="tournament">${match.tournament}</p>
+            <p class="time">Today, ${match.time}</p>
+          </div>
+          <a href="/ipl20" class="btn btn-sm">Watch</a>
+        `;
+        
+        matchesContainer.appendChild(matchCard);
+      });
+    } else {
+      // No matches today
+      matchesContainer.innerHTML = '<p class="no-matches">No matches scheduled for today.</p>';
+    }
+  }
+</script>
 
 <%- include('partials/footer') %>
