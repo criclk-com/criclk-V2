@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="<%= isMobile ? 'desktop-forced' : '' %>">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script disable-devtool-auto src="https://cdnjs.cloudflare.com/ajax/libs/disable-devtool/0.3.4/disable-devtool.min.js"></script>
     <title><%= title %></title>
     <style>
@@ -117,38 +117,43 @@
             background-color: #c2185b;
         }
         
-        .fullscreen-hint {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            z-index: 15;
-            display: none;
+        /* Desktop Mode Forcing for Mobile */
+        <% if (isMobile) { %>
+        html.desktop-forced {
+            min-width: 1024px !important;
+            overflow-x: auto !important;
         }
         
-        .fullscreen-btn {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 8px 12px;
-            font-size: 14px;
-            cursor: pointer;
-            z-index: 15;
-            display: none;
+        html.desktop-forced body {
+            width: 1024px !important;
+            overflow-x: hidden !important;
         }
+        
+        /* Force desktop player dimensions */
+        html.desktop-forced .player-container {
+            width: 100% !important;
+            height: 500px !important;
+        }
+        
+        /* Fix for iOS */
+        @supports (-webkit-touch-callout: none) {
+            html.desktop-forced .player-container,
+            html.desktop-forced iframe {
+                position: relative !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 500px !important;
+            }
+        }
+        <% } %>
     </style>
+    <!-- Additional mobile fixes -->
+    <% if (isMobile) { %>
+    <link rel="stylesheet" href="/css/mobile.css">
+    <% } %>
 </head>
 <body>
-    <div class="player-container" id="player-container">
+    <div class="player-container <%= isMobile ? 'desktop-mode-player' : '' %>" id="player-container">
         <!-- The iframe will be inserted here via JavaScript -->
     </div>
     
@@ -159,25 +164,14 @@
     
     <div class="error-overlay" id="error-overlay">
         <h2>Stream Error</h2>
-        <p>There was a problem loading the stream. This can sometimes happen with mobile devices.</p>
-        <p>Try rotating your device to landscape mode or using a different browser.</p>
+        <p>There was a problem loading the stream.</p>
         <button class="btn" onclick="location.reload()">Retry</button>
     </div>
-    
-    <% if (isMobile) { %>
-    <div class="fullscreen-hint" id="fullscreen-hint">
-        Tap anywhere to enter fullscreen mode
-    </div>
-    
-    <button class="fullscreen-btn" id="fullscreen-btn">
-        Fullscreen
-    </button>
-    <% } %>
     
     <div class="watermark">CricketStream.com</div>
     
     <script>
-        // Check if device is mobile
+        // Check if we're on mobile
         const isMobile = <%= isMobile ? 'true' : 'false' %>;
         
         // Function to load the iframe
@@ -193,35 +187,24 @@
             iframe.allow = 'fullscreen; encrypted-media';
             iframe.allowFullscreen = true;
             
-            // Set sandbox attributes with correct permissions
-            if (isMobile) {
-                // For mobile: Add all necessary permissions 
-                // but be careful not to break the player
-                iframe.sandbox = 'allow-same-origin allow-scripts allow-forms allow-presentation';
-            } else {
-                // For desktop: Standard sandbox
-                iframe.sandbox = 'allow-same-origin allow-scripts allow-forms allow-presentation';
-            }
+            // Set sandbox attributes - same for mobile and desktop now
+            iframe.sandbox = 'allow-same-origin allow-scripts allow-forms allow-presentation';
             
             // On load event
             iframe.onload = function() {
                 // Hide loading overlay after a short delay
                 setTimeout(function() {
                     loadingOverlay.style.display = 'none';
-                    
-                    // Show fullscreen hint for a few seconds on mobile
-                    if (isMobile) {
-                        const fullscreenHint = document.getElementById('fullscreen-hint');
-                        const fullscreenBtn = document.getElementById('fullscreen-btn');
-                        
-                        fullscreenHint.style.display = 'block';
-                        fullscreenBtn.style.display = 'block';
-                        
-                        setTimeout(function() {
-                            fullscreenHint.style.display = 'none';
-                        }, 5000);
-                    }
                 }, 1000);
+                
+                // Force desktop mode for mobile
+                if (isMobile) {
+                    // Try to reset viewport scaling for best compatibility
+                    const viewportMeta = document.querySelector('meta[name="viewport"]');
+                    if (viewportMeta) {
+                        viewportMeta.content = 'width=1024, initial-scale=1';
+                    }
+                }
             };
             
             // Error handling
@@ -237,46 +220,9 @@
             playerContainer.appendChild(iframe);
         }
         
-        // Toggle fullscreen
-        function toggleFullscreen() {
-            const container = document.getElementById('player-container');
-            
-            if (!document.fullscreenElement) {
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                } else if (container.webkitRequestFullscreen) { /* Safari */
-                    container.webkitRequestFullscreen();
-                } else if (container.msRequestFullscreen) { /* IE11 */
-                    container.msRequestFullscreen();
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) { /* Safari */
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) { /* IE11 */
-                    document.msExitFullscreen();
-                }
-            }
-        }
-        
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             loadStream();
-            
-            // Add fullscreen toggle events for mobile
-            if (isMobile) {
-                // Fullscreen button
-                document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
-                
-                // Tap anywhere to fullscreen
-                document.addEventListener('click', function(e) {
-                    // Don't trigger on button clicks
-                    if (e.target.tagName !== 'BUTTON') {
-                        toggleFullscreen();
-                    }
-                }, { once: true }); // Only trigger once
-            }
         });
         
         // Prevent right-click
